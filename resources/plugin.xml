@@ -3,7 +3,7 @@
     <about>
         <name>dockerpoller</name>
         <version>1.2.0</version>
-        <target-go-version>17.7.0</target-go-version>
+        <target-go-version>18.7.0</target-go-version>
         <description>Docker package poller plugin for Thoughworks GoCD.</description>
         <vendor>
             <name>Magnus Lyckå</name>

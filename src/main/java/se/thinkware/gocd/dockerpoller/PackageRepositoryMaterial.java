@@ -1,8 +1,10 @@
 package se.thinkware.gocd.dockerpoller;
 
+import com.google.gson.GsonBuilder;
 import com.thoughtworks.go.plugin.api.AbstractGoPlugin;
 import com.thoughtworks.go.plugin.api.GoPluginIdentifier;
 import com.thoughtworks.go.plugin.api.annotation.Extension;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -18,6 +20,7 @@ import static se.thinkware.gocd.dockerpoller.JsonUtil.toJsonString;
 
 @Extension
 public class PackageRepositoryMaterial extends AbstractGoPlugin {
+    private static Logger LOGGER = Logger.getLoggerFor(PackageRepositoryMaterial.class);
 
     public static final String EXTENSION = "package-repository";
     public static final String REQUEST_REPOSITORY_CONFIGURATION = "repository-configuration";
@@ -46,9 +49,14 @@ public class PackageRepositoryMaterial extends AbstractGoPlugin {
         handlerMap.put(REQUEST_LATEST_PACKAGE_REVISION_SINCE, latestRevisionSinceMessageHandler());
     }
 
+    private Object parseJSON(String json) {
+        return new GsonBuilder().create().fromJson(json, Object.class);
+    }
+
 
     @Override
     public GoPluginApiResponse handle(GoPluginApiRequest goPluginApiRequest) {
+
         try {
             if (handlerMap.containsKey(goPluginApiRequest.requestName())) {
                 return handlerMap.get(goPluginApiRequest.requestName()).handle(goPluginApiRequest);
@@ -138,6 +146,9 @@ public class PackageRepositoryMaterial extends AbstractGoPlugin {
         return new MessageHandler() {
             @Override
             public GoPluginApiResponse handle(GoPluginApiRequest request) {
+                Map<String, Object> responseMap = (Map<String, Object>) parseJSON(request.requestBody());
+                String flyweightFolder = (String) responseMap.get("flyweight-folder");
+                LOGGER.warn("flyweight: " + flyweightFolder);
                 LatestPackageRevisionMessage message = fromJsonString(request.requestBody(), LatestPackageRevisionMessage.class);
                 PackageRevisionMessage revision = packageRepositoryPoller.getLatestRevision(message.getPackageConfiguration(), message.getRepositoryConfiguration());
                 return success(toJsonString(revision));
@@ -151,6 +162,9 @@ public class PackageRepositoryMaterial extends AbstractGoPlugin {
             public GoPluginApiResponse handle(GoPluginApiRequest request) {
                 LatestPackageRevisionSinceMessage message = fromJsonString(request.requestBody(), LatestPackageRevisionSinceMessage.class);
                 PackageRevisionMessage revision = packageRepositoryPoller.getLatestRevisionSince(message.getPackageConfiguration(), message.getRepositoryConfiguration(), message.getPreviousRevision());
+                Map<String, Object> responseMap = (Map<String, Object>) parseJSON(request.requestBody());
+                String flyweightFolder = (String) responseMap.get("flyweight-folder");
+                LOGGER.warn("flyweight: " + flyweightFolder + " revision: " + revision.getRevision() + " previousrevision: " + message.getPreviousRevision().getRevision());
                 return success(revision == null ? null : toJsonString(revision));
             }
         };
