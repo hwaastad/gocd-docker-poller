@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <go.target.version>17.7.0</go.target.version>
-        <go.version>17.7.0</go.version>
+        <go.target.version>18.7.0</go.target.version>
+        <go.version>18.7.0</go.version>
         <plugin.version>${project.version}</plugin.version>
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.0.0</junit.jupiter.version>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>cd.go.plugin</groupId>
             <artifactId>go-plugin-api</artifactId>
-            <version>17.10.0</version>
+            <version>18.7.0</version>
             <!--type>pom</type-->
         </dependency>
         <dependency>
